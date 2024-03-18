@@ -98,23 +98,27 @@ def spread(pirate):
         return moveTo(x-1 , y-1 , pirate)
 #
 
-#Functions from samples
-def Sample1_ActPirate(pirate):
-    up = pirate.investigate_up()
-    down = pirate.investigate_down()
-    left = pirate.investigate_left()
-    right = pirate.investigate_right()
-    x, y = pirate.getPosition()
-    pirate.setSignal("")
-    s = pirate.trackPlayers()
-    
-    if (
-        (up == "island1" and s[0] != "myCaptured")
-        or (up == "island2" and s[1] != "myCaptured")
-        or (up == "island3" and s[2] != "myCaptured")
-    ):
-        s = up[-1] + str(x) + "," + str(y - 1)
-        pirate.setTeamSignal(s)
+#CODE
+def ActPirate(pirate):
+    deploy=pirate.getDeployPoint()
+    piratenos=pirate.getID()
+    global frame
+    if phase == 1:
+        up = pirate.investigate_up()
+        down = pirate.investigate_down()
+        left = pirate.investigate_left()
+        right = pirate.investigate_right()
+        x, y = pirate.getPosition()
+        pirate.setSignal("")
+        s = pirate.trackPlayers()
+        
+        if (
+            (up == "island1" and s[0] != "myCaptured")
+            or (up == "island2" and s[1] != "myCaptured")
+            or (up == "island3" and s[2] != "myCaptured")
+        ):
+            s = up[-1] + str(x) + "," + str(y - 1)
+            pirate.setTeamSignal(s)
 
     if (
         (down == "island1" and s[0] != "myCaptured")
@@ -154,7 +158,41 @@ def Sample1_ActPirate(pirate):
             #to be optimised according to deploy point
             return numpy.random.choice(numpy.arange(1, 5), p=[0.4,0.1,0.1,0.4])
         else:
-            return random.randint(1,4)
+
+#            if frame < 200:
+#                #to be optimised according to deploy point
+#                if deploy[0]==39:            
+#                    return numpy.random.choice(numpy.arange(1, 5), p=[0.45,0.05,0.05,0.45])
+#                else:
+#                    return numpy.random.choice(numpy.arange(1, 5), p=[0.45,0.45,0.05,0.05])
+#            else:
+#                return random.randint(1,4)
+            if int(piratenos) < 20:
+                #first 20 pirates will diirectly go and attack
+                if deploy[0]==39:            
+                    return numpy.random.choice(numpy.arange(1, 5), p=[0.45,0.05,0.05,0.45])
+                else:
+                    return numpy.random.choice(numpy.arange(1, 5), p=[0.45,0.45,0.05,0.05])
+            else:
+                return random.randint(1,4)
+
+    elif phase == 2:
+        up = pirate.investigate_up()[0]
+        down = pirate.investigate_down()[0]
+        left = pirate.investigate_left()[0]
+        right = pirate.investigate_right()[0]
+        x, y = pirate.getPosition()
+        pirate.setSignal("")
+        s = pirate.trackPlayers()
+        
+        if (
+            (up == "island1" and s[0] != "myCaptured")
+            or (up == "island2" and s[1] != "myCaptured")
+            or (up == "island3" and s[2] != "myCaptured")
+        ):
+            s = up[-1] + str(x) + "," + str(y - 1)
+            pirate.setTeamSignal(s)
+
 
 def Sample4_ActPirate(pirate):
     up = pirate.investigate_up()[0]
@@ -246,6 +284,7 @@ def ActPirate(pirate):
 
 #CODE
 def ActTeam(team):
+    deploy=team.getDeployPoint()
     global phase
     #Stage 1 implimentation
     l = team.trackPlayers()[3:]
