@@ -4,18 +4,11 @@ import math
 
 name = "hybrid sample"
 
-#If phase == 1: sample1 runs
-#If phase == 2: sample4 runs
-phase = 1
-#
-
-#
-frame = 0
-#
+#phase 1 : aggressive
+#phase 2 : defensive
 
 #sample1 extra functions
 def moveTo(x, y, Pirate):
-    print("Inside")
     position = Pirate.getPosition()
     if position[0] == x and position[1] == y:
         return 0
@@ -120,7 +113,7 @@ def move_diagonally(pirate):
             return numpy.random.choice(numpy.arange(1, 5), p=[hp,lp,lp,hp])
 
 #Functions from samples
-def Sample1_ActPirate(pirate):
+def aggressive_ActPirate(pirate):
     print(pirate.getID())
     global frame
     if frame < 200:
@@ -128,7 +121,7 @@ def Sample1_ActPirate(pirate):
     else:
         return random.randint(1,4)
 
-def Sample4_ActPirate(pirate):
+def defensive_ActPirate(pirate):
     up = pirate.investigate_up()[0]
     down = pirate.investigate_down()[0]
     left = pirate.investigate_left()[0]
@@ -181,12 +174,11 @@ def Sample4_ActPirate(pirate):
     else:
         return spread(pirate)
 
-def Sample1_ActTeam(team):
+def aggressive_ActTeam(team):
     global phase
     phase = 1
-    
 
-def Sample4_ActTeam(team):
+def defensive_ActTeam(team):
     global phase
     phase =2
     l = team.trackPlayers()
@@ -205,18 +197,25 @@ def Sample4_ActTeam(team):
 
 #CODE
 def ActPirate(pirate):
-    global frame
-    if phase == 1:
-        return Sample1_ActPirate(pirate)
-    elif phase == 2:
-        return Sample4_ActPirate(pirate)
+    sig = pirate.getTeamSignal().split(';')
+    if sig[0][-1] == '1':
+        #phase 1
+        return aggressive_ActPirate(pirate)
+    else:
+        #phase 2
+        return defensive_ActPirate(pirate)
 
 #CODE
 def ActTeam(team):
-    global phase
+    frame = team.getCurrentFrame()
+    if frame == 1:
+        team.setTeamSignal('phase1;1;')
+    phase = team.getTeamSignal.split(';')[0][-1]
+    phase = int(phase)
+    
     #Stage 1 implimentation
     l = team.trackPlayers()[3:]
-    flag =0
+    flag = 0
 
     if phase == 1:
         sum = 0
@@ -226,8 +225,6 @@ def ActTeam(team):
         if sum == 1:
             flag =1
 
-    global frame
-    frame = team.getCurrentFrame()
     print(frame)
     print(phase)
     if frame > 1000:
@@ -235,7 +232,7 @@ def ActTeam(team):
     
     #phase1
     if flag == 0 :
-        return Sample1_ActTeam(team)
+        return aggressive_ActPirate(team)
     #phase2
     else:
-        return Sample4_ActTeam(team)
+        return defensive_ActTeam(team)
