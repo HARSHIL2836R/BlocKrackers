@@ -102,32 +102,31 @@ def spread(pirate):
 #
 
 #my functions
-def attack(pirate):
-    up = pirate.investigate_up()[1]
-    down = pirate.investigate_down()[1]
-    left = pirate.investigate_left()[1]
-    right = pirate.investigate_right()[1]
-   
-    if up == 'enemy':
-        return 1
-    if down == 'enemy':
-        return 3
-    if left == 'enemy':
-        return 4
-    if right == 'enemy':
-        return 2
+def move_diagonally(pirate):
+    dp = pirate.getDeployPoint()
+    X = pirate.getDimensionX()
+    X = int(X)
+    hp = 0.4 #high probability
+    lp = 0.1 #low probability
+    if int(dp[0]) < X/2 :
+        if int(dp[1]) == 0:
+            return numpy.random.choice(numpy.arange(1, 5), p=[lp,hp,hp,lp])
+        else:
+            return numpy.random.choice(numpy.arange(1, 5), p=[hp,hp,lp,lp])
     else:
-        return random.randint(1,4)
-    
+        if int(dp[1]) == 0:
+            return numpy.random.choice(numpy.arange(1, 5), p=[lp,lp,hp,hp])
+        else:
+            return numpy.random.choice(numpy.arange(1, 5), p=[hp,lp,lp,hp])
+
 #Functions from samples
 def Sample1_ActPirate(pirate):
-    
+    print(pirate.getID())
     global frame
     if frame < 200:
-        #to be optimised according to deploy point
-        return numpy.random.choice(numpy.arange(1, 5), p=[0.4,0.1,0.1,0.4])
+        return move_diagonally(pirate)
     else:
-        return attack(pirate)
+        return random.randint(1,4)
 
 def Sample4_ActPirate(pirate):
     up = pirate.investigate_up()[0]
@@ -146,7 +145,7 @@ def Sample4_ActPirate(pirate):
         s = up[-1] + str(x) + "," + str(y - 1)
         pirate.setTeamSignal(s)
 
-    if (
+    if (    
         (down == "island1" and s[0] != "myCaptured")
         or (down == "island2" and s[1] != "myCaptured")
         or (down == "island3" and s[2] != "myCaptured")
