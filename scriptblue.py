@@ -175,7 +175,17 @@ def move_onboundary_side(pirate):
             return numpy.random.choice(numpy.arange(1, 5), p=[0.1,0.2,0.15,0.55])
         else:
             return numpy.random.choice(numpy.arange(1, 5), p=[0.15,0.2,0.1,0.55])
-
+def SetSig(team, i, sig):
+    #Sets Team Signal sig at ith index
+    OldTS = team.getTeamSignal().split(';')
+    if OldTS[-1] == "":
+        OldTS[-1] = "__empty__"
+    if i > len(OldTS):
+        #j is dummy variable
+        for j in range(i+1-len(OldTS)):
+            OldTS.append("__empty__")
+    OldTS[i] = str(sig)
+    team.setTeamSignal(';'.join(OldTS))
 
 
 #Functions from samples
@@ -261,15 +271,7 @@ def aggressive_ActTeam(team):
     team.setTeamSignal(';'.join(OldTS))
 
 def defensive_ActTeam(team):
-    def SetSig(team, i, sig):
-        #Sets Team Signal sig at ith index
-        OldTS = team.getTeamSignal().split(';')
-        if i > len(OldTS):
-            #j is dummy variable
-            for j in range(i+1-len(OldTS)):
-                OldTS.append("__empty__")
-        OldTS[i] = str(sig)
-        team.setTeamSignal(';'.join(OldTS))
+
     #change phase
     SetSig(team,0,'phase2')
 
@@ -293,6 +295,8 @@ def defensive_ActTeam(team):
 
 #CODE
 def ActPirate(pirate):
+    pirate.setSignal("1")
+    print(pirate.investigate_current())
     sig = pirate.getTeamSignal().split(';')
     if sig[0][-1] == '1':
         #phase 1
@@ -303,23 +307,12 @@ def ActPirate(pirate):
 
 #CODE
 def ActTeam(team):
-    def SetSig(team, i, sig):
-        #Sets Team Signal sig at ith index
-        OldTS = team.getTeamSignal().split(';')
-        if i > len(OldTS):
-            #j is dummy variable
-            for j in range(i+1-len(OldTS)):
-                OldTS.append("__empty__")
-        OldTS[i] = str(sig)
-        team.setTeamSignal(';'.join(OldTS))
-    
     frame = team.getCurrentFrame()
     if frame == 1:
         team.setTeamSignal('phase1;1;__empty__;')
     SetSig(team,1,frame)
     phase = team.getTeamSignal().split(';')[0][-1]
     phase = int(phase)
-    print(team.getTeamSignal())
     
     #Stage 1 implimentation
     l = team.trackPlayers()[3:]
@@ -336,6 +329,8 @@ def ActTeam(team):
 
     if frame > 500:
         flag = 1
+    
+    #Check Center
     
     #phase1
     if flag == 0 :
