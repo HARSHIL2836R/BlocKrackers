@@ -7,7 +7,7 @@ name = "hybrid sample"
 #phase 1 : aggressive
 #phase 2 : defensive
 
-#TEAM SIGNAL: (0)phase;frame;sig;(3)island_1_state;state;state;(6)(str)island_1_loc;loc;loc
+#TEAM SIGNAL: (0)phase;frame;sig;(3)island_1_state;state;state;(6)(str)island_1_loc;loc;loc;(9)island1_center;center;center
 
 #sample1 extra functions
 def moveTo(x, y, Pirate):
@@ -178,12 +178,6 @@ def move_onboundary_side(pirate):
 def SetSig(obj, i, sig):
     #Sets Team Signal sig at ith index
     OldTS = obj.getTeamSignal().split(';')
-    if OldTS[-1] == "":
-        OldTS[-1] = "__empty__"
-    if i > len(OldTS):
-        #j is dummy variable
-        for j in range(i+1-len(OldTS)):
-            OldTS.append("__empty__")
     OldTS[i] = str(sig)
     obj.setTeamSignal(';'.join(OldTS))
 
@@ -233,107 +227,116 @@ def defensive_ActPirate(pirate):
     TeamSig = pirate.getTeamSignal().split(';')
 
     for i in range(1,4):
-        if str(str(x)+","+str(y)) == TeamSig[5+i]:
-            print("Signal Set for "+pirate.getID())
-            pirate.setSignal("center"+str(i))
-            print(pirate.getSignal())
-            SetSig(pirate,i+2,"1")
-            return 0
-    
-    if pirate.getSignal():
-        return 0
-
-    def check(obj):
-        #checks whether in the direction obj is there any island or not
-        return ((obj == "island1" and s[0] != "myCaptured")
-        or (obj == "island2" and s[1] != "myCaptured")
-        or (obj == "island3" and s[2] != "myCaptured"))
-    
-    if (curr == "blank"):
-        if (check(up)):
-            if (check(ne) and check(nw)):
-                s = up[-1] + str(x) + "," + str(y - 2)
-                SetSig(pirate, 2, s)
-            elif (check(ne)):
-                s = up[-1] + str(x+1) + "," + str(y - 2)
-                SetSig(pirate, 2, s)
-            else:
-                s = up[-1] + str(x-1) + "," + str(y - 2)
-                SetSig(pirate, 2, s)
-
-        if (check(down)):
-            if (check(sw) and check(se)):
-                s = down[-1] + str(x) + "," + str(y + 2)
-                SetSig(pirate, 2, s)
-            elif (check(sw)):
-                s = down[-1] + str(x-1) + "," + str(y + 2)
-                SetSig(pirate, 2, s)
-            else:
-                s = down[-1] + str(x+1) + "," + str(y + 2)
-                SetSig(pirate, 2, s)
-
-        if (check(left)):
-            if (check(ne) and check(se)):
-                s = left[-1] + str(x - 2) + "," + str(y)
-                SetSig(pirate, 2, s)
-            elif (check(nw)):
-                s = left[-1] + str(x - 2) + "," + str(y-1)
-                SetSig(pirate, 2, s)
-            else:
-                s = left[-1] + str(x - 2) + "," + str(y+1)
-                SetSig(pirate, 2, s)
-            
-        if (check(right)):
-            if check(nw) and check(sw):
-                s = right[-1] + str(x + 2) + "," + str(y)
-                SetSig(pirate, 2, s)
-            elif check(ne):
-                s = right[-1] + str(x + 2) + "," + str(y-1)
-                SetSig(pirate, 2, s)
-            else:
-                s = right[-1] + str(x + 2) + "," + str(y+1)
-                SetSig(pirate, 2, s)
-
-        if (check(nw) and not check(up) and not check(down) and not check(left) and not check(right)):
-            s = nw[-1] + str(x - 2) + "," + str(y-2)
-            SetSig(pirate, 2, s)
-        if (check(ne) and not check(up) and not check(down) and not check(left) and not check(right)):
-            s = ne[-1] + str(x + 2) + "," + str(y-2)
-            SetSig(pirate, 2, s)
-        if (check(sw) and not check(up) and not check(down) and not check(left) and not check(right)):
-            s = sw[-1] + str(x - 2) + "," + str(y+2)
-            SetSig(pirate, 2, s)
-        if (check(se) and not check(up) and not check(down) and not check(left) and not check(right)):
-            s = se[-1] + str(x + 2) + "," + str(y+2)
-            SetSig(pirate, 2, s)
-
-    s = TeamSig[2]
-    if pirate.getID() == "4" : 
-        print(TeamSig[1],"s:",s, "phases: ", TeamSig[3:9], "pos", x,y, pirate.getSignal())
-
-    if s != "__empty__":
-        if TeamSig[2+int(s[0])] != "1" and pirate.getSignal() != "center"+s[0]:
-            if pirate.getID() == "4":
-                print("Moving")
-            SetSig(pirate,2+int(s[0]),str(0))
-            l = s.split(",")
-            x = int(l[0][1:])
-            y = int(l[1])
-
-            return moveTo(x, y, pirate)
+        if (pirate.getSignal() == "center"+str(i)):
+            print(TeamSig[1],"Returning Zero")
+            x = int(TeamSig[i+5].split(',')[0])
+            y = int(TeamSig[i+5].split(',')[1])
+            return moveTo(x,y,pirate)
         
-        elif pirate.getSignal() != "center"+s[0]:
-            if TeamSig[2+int(s[0])] == "1":
-                x = s.split(",")[0][1:]
-                y = s.split(",")[1]
-                if pirate.getID()=="4":
-                    print("circle")
-                return circleAround(int(x),int(y),2,pirate,"abc",True)
-
     else:
-        if pirate.getID() == "4":
-            print("Spreading")
-        return spread(pirate)
+        for i in range(1,4):
+            if str(str(x)+","+str(y)) == TeamSig[5+i] and TeamSig[8+i] != "1":
+                print("Signal Set for "+pirate.getID())
+                pirate.setSignal("center"+str(i))
+                print(pirate.getSignal())
+                SetSig(pirate,i+2,"1")
+                return 0
+        
+
+        def check(obj):
+            #checks whether in the direction obj is there any island or not
+            return ((obj == "island1" and s[0] != "myCaptured")
+            or (obj == "island2" and s[1] != "myCaptured")
+            or (obj == "island3" and s[2] != "myCaptured"))
+        
+        if (curr == "blank"):
+            if (check(up)):
+                if (check(ne) and check(nw)):
+                    s = up[-1] + str(x) + "," + str(y - 2)
+                    SetSig(pirate, 2, s)
+                elif (check(ne)):
+                    s = up[-1] + str(x+1) + "," + str(y - 2)
+                    SetSig(pirate, 2, s)
+                else:
+                    s = up[-1] + str(x-1) + "," + str(y - 2)
+                    SetSig(pirate, 2, s)
+
+            if (check(down)):
+                if (check(sw) and check(se)):
+                    s = down[-1] + str(x) + "," + str(y + 2)
+                    SetSig(pirate, 2, s)
+                elif (check(sw)):
+                    s = down[-1] + str(x-1) + "," + str(y + 2)
+                    SetSig(pirate, 2, s)
+                else:
+                    s = down[-1] + str(x+1) + "," + str(y + 2)
+                    SetSig(pirate, 2, s)
+
+            if (check(left)):
+                if (check(ne) and check(se)):
+                    s = left[-1] + str(x - 2) + "," + str(y)
+                    SetSig(pirate, 2, s)
+                elif (check(nw)):
+                    s = left[-1] + str(x - 2) + "," + str(y-1)
+                    SetSig(pirate, 2, s)
+                else:
+                    s = left[-1] + str(x - 2) + "," + str(y+1)
+                    SetSig(pirate, 2, s)
+                
+            if (check(right)):
+                if check(nw) and check(sw):
+                    s = right[-1] + str(x + 2) + "," + str(y)
+                    SetSig(pirate, 2, s)
+                elif check(ne):
+                    s = right[-1] + str(x + 2) + "," + str(y-1)
+                    SetSig(pirate, 2, s)
+                else:
+                    s = right[-1] + str(x + 2) + "," + str(y+1)
+                    SetSig(pirate, 2, s)
+
+            if (check(nw) and not check(up) and not check(down) and not check(left) and not check(right)):
+                s = nw[-1] + str(x - 2) + "," + str(y-2)
+                SetSig(pirate, 2, s)
+            if (check(ne) and not check(up) and not check(down) and not check(left) and not check(right)):
+                s = ne[-1] + str(x + 2) + "," + str(y-2)
+                SetSig(pirate, 2, s)
+            if (check(sw) and not check(up) and not check(down) and not check(left) and not check(right)):
+                s = sw[-1] + str(x - 2) + "," + str(y+2)
+                SetSig(pirate, 2, s)
+            if (check(se) and not check(up) and not check(down) and not check(left) and not check(right)):
+                s = se[-1] + str(x + 2) + "," + str(y+2)
+                SetSig(pirate, 2, s)
+
+        s = TeamSig[2]
+        if pirate.getID() == "4" : 
+            print(TeamSig[1],"s:",s, "phases: ", TeamSig[3:12], "pos", x,y, pirate.getSignal())
+            pass
+        if s != "__empty__":
+            if TeamSig[2+int(s[0])] != "1" and pirate.getSignal() != "center"+s[0]:
+                if pirate.getID() == "4":
+                    print("Moving")
+                    pass
+                SetSig(pirate,2+int(s[0]),str(0))
+                l = s.split(",")
+                x = int(l[0][1:])
+                y = int(l[1])
+
+                return moveTo(x, y, pirate)
+            
+            elif pirate.getSignal() != "center"+s[0]:
+                if TeamSig[2+int(s[0])] == "1":
+                    x = s.split(",")[0][1:]
+                    y = s.split(",")[1]
+                    if pirate.getID()=="4":
+                        print("circle")
+                        pass
+                    return circleAround(int(x),int(y),1,pirate,"abc",True)
+
+        else:
+            if pirate.getID() == "4":
+                print("Spreading")
+                pass
+            return spread(pirate)
 
 def aggressive_ActTeam(team):
     OldTS = team.getTeamSignal().split(';')
@@ -348,6 +351,11 @@ def defensive_ActTeam(team):
     l = team.trackPlayers()
     #s = sig
     s = TeamSig[2]
+
+    #set boolean for center occupied or not
+    for i in range(1,4):
+        if "center"+str(i) in list(team.getListOfSignals()):
+            SetSig(team,8+i,"1")
 
     for i in range(1,4):
         try:
@@ -381,14 +389,15 @@ def ActPirate(pirate):
 def ActTeam(team):
     frame = team.getCurrentFrame()
     if frame == 1:
-        team.setTeamSignal('phase1;1;__empty__;__empty__;__empty__;__empty__;__empty__;__empty__;__empty__')
+        #TEAM SIGNAL: (0)phase;frame;sig;(3)island_1_state;state;state;(6)(str)island_1_loc;loc;loc;(9)island1_center;center;center
+        team.setTeamSignal("phase1;1;__empty__;__empty__;__empty__;__empty__;__empty__;__empty__;__empty__;0;0;0")
     SetSig(team,1,frame)
     phase = team.getTeamSignal().split(';')[0][-1]
     phase = int(phase)
     
     #Stage 1 implimentation
     l = team.trackPlayers()[3:]
-    flag = 1
+    flag = 0
 
     if phase == 1:
         sum = 0
