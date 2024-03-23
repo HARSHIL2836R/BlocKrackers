@@ -7,7 +7,7 @@ name = "hybrid sample"
 #phase 1 : aggressive
 #phase 2 : defensive
 
-#TEAM SIGNAL: phase;frame;sig;island_1_state;state;state;(str)island_1_loc;loc;loc
+#TEAM SIGNAL: (0)phase;frame;sig;(3)island_1_state;state;state;(6)(str)island_1_loc;loc;loc
 
 #sample1 extra functions
 def moveTo(x, y, Pirate):
@@ -175,9 +175,9 @@ def move_onboundary_side(pirate):
             return numpy.random.choice(numpy.arange(1, 5), p=[0.1,0.2,0.15,0.55])
         else:
             return numpy.random.choice(numpy.arange(1, 5), p=[0.15,0.2,0.1,0.55])
-def SetSig(team, i, sig):
+def SetSig(obj, i, sig):
     #Sets Team Signal sig at ith index
-    OldTS = team.getTeamSignal().split(';')
+    OldTS = obj.getTeamSignal().split(';')
     if OldTS[-1] == "":
         OldTS[-1] = "__empty__"
     if i > len(OldTS):
@@ -185,7 +185,7 @@ def SetSig(team, i, sig):
         for j in range(i+1-len(OldTS)):
             OldTS.append("__empty__")
     OldTS[i] = str(sig)
-    team.setTeamSignal(';'.join(OldTS))
+    obj.setTeamSignal(';'.join(OldTS))
 
 
 #Functions from samples
@@ -211,56 +211,102 @@ def defensive_ActPirate(pirate):
     down = pirate.investigate_down()[0]
     left = pirate.investigate_left()[0]
     right = pirate.investigate_right()[0]
+    ne = pirate.investigate_ne()[0]
+    nw = pirate.investigate_nw()[0]
+    se = pirate.investigate_se()[0]
+    sw = pirate.investigate_sw()[0]
     x, y = pirate.getPosition()
     pirate.setSignal("")
     s = pirate.trackPlayers()
+    TeamSig = pirate.getTeamSignal().split(';')
+
+    for i in range(1,4):
+        if str(str(x)+","+str(y)) == TeamSig[5+i]:
+            pirate.setSignal("center"+str(i))
+            SetSig(pirate,i+2,"1")
+            return 0
+        
+    def check(obj):
+        #checks whether in the direction obj is there any island or not
+        return ((obj == "island1" and s[0] != "myCaptured")
+        or (obj == "island2" and s[1] != "myCaptured")
+        or (obj == "island3" and s[2] != "myCaptured"))
     
-    def appendTS(pirate, s):
-        OldTS = pirate.getTeamSignal().split(';')
-        OldTS[2] = s
-        NewTS = ';'.join(OldTS)
-        pirate.setTeamSignal(NewTS)
+    if (check(up)):
+        if (check(ne) and check(nw)):
+            s = up[-1] + str(x) + "," + str(y - 2)
+            SetSig(pirate, 2, s)
+        elif (check(ne)):
+            s = up[-1] + str(x+1) + "," + str(y - 2)
+            SetSig(pirate, 2, s)
+        else:
+            s = up[-1] + str(x-1) + "," + str(y - 2)
+            SetSig(pirate, 2, s)
 
-    if (
-        (up == "island1" and s[0] != "myCaptured")
-        or (up == "island2" and s[1] != "myCaptured")
-        or (up == "island3" and s[2] != "myCaptured")
-    ):
-        s = up[-1] + str(x) + "," + str(y - 2)
-        appendTS(pirate, s)
+    elif (check(down)):
+        if (check(sw) and check(se)):
+            s = down[-1] + str(x) + "," + str(y + 2)
+            SetSig(pirate, 2, s)
+        elif (check(sw)):
+            s = down[-1] + str(x-1) + "," + str(y + 2)
+            SetSig(pirate, 2, s)
+        else:
+            s = down[-1] + str(x+1) + "," + str(y + 2)
+            SetSig(pirate, 2, s)
 
-    if (    
-        (down == "island1" and s[0] != "myCaptured")
-        or (down == "island2" and s[1] != "myCaptured")
-        or (down == "island3" and s[2] != "myCaptured")
-    ):
-        s = down[-1] + str(x) + "," + str(y + 2)
-        appendTS(pirate, s)
+    elif (check(left)):
+        if (check(ne) and check(se)):
+            s = left[-1] + str(x - 2) + "," + str(y)
+            SetSig(pirate, 2, s)
+        elif (check(nw)):
+            s = left[-1] + str(x - 2) + "," + str(y-1)
+            SetSig(pirate, 2, s)
+        else:
+            s = left[-1] + str(x - 2) + "," + str(y+1)
+            SetSig(pirate, 2, s)
+        
+    elif (check(right)):
+        if check(nw) and check(sw):
+            s = right[-1] + str(x + 2) + "," + str(y)
+            SetSig(pirate, 2, s)
+        elif check(ne):
+            s = right[-1] + str(x + 2) + "," + str(y-1)
+            SetSig(pirate, 2, s)
+        else:
+            s = right[-1] + str(x + 2) + "," + str(y+1)
+            SetSig(pirate, 2, s)
 
-    if (
-        (left == "island1" and s[0] != "myCaptured")
-        or (left == "island2" and s[1] != "myCaptured")
-        or (left == "island3" and s[2] != "myCaptured")
-    ):
-        s = left[-1] + str(x - 2) + "," + str(y)
-        appendTS(pirate, s)
+    elif (check(nw)):
+        s = nw[-1] + str(x - 2) + "," + str(y-2)
+        SetSig(pirate, 2, s)
+    elif (check(ne)):
+        s = ne[-1] + str(x + 2) + "," + str(y-2)
+        SetSig(pirate, 2, s)
+    elif (check(sw)):
+        s = sw[-1] + str(x - 2) + "," + str(y+2)
+        SetSig(pirate, 2, s)
+    elif (check(se)):
+        s = se[-1] + str(x + 2) + "," + str(y+2)
+        SetSig(pirate, 2, s)
 
-    if (
-        (right == "island1" and s[0] != "myCaptured")
-        or (right == "island2" and s[1] != "myCaptured")
-        or (right == "island3" and s[2] != "myCaptured")
-    ):
-        s = right[-1] + str(x + 2) + "," + str(y)
-        appendTS(pirate, s)
-
-    
-    if pirate.getTeamSignal().split(';')[2] != "__empty__":
-        s = pirate.getTeamSignal().split(';')[2]
+    s = TeamSig[2]
+    if pirate.getID() == "4" : 
+        print(TeamSig[1],"s:",s, "phases: ", TeamSig[3:9], "pos", x,y, pirate.getSignal())
+    if s != "__empty__" and TeamSig[2+int(s[0])] == "__empty__" and pirate.getSignal() != "center"+s[0]:
+        SetSig(pirate,2+int(s[0]),str(0))
         l = s.split(",")
         x = int(l[0][1:])
         y = int(l[1])
-    
+
         return moveTo(x, y, pirate)
+    
+    elif s != "__empty__" and pirate.getSignal() != "center":
+        if TeamSig[2+int(s[0])] == "1":
+            x = s.split(",")[0][1:]
+            y = s.split(",")[1]
+            if pirate.getID()=="4":
+                print("circle")
+            return circleAround(int(x),int(y),2,pirate,"abc",True)
 
     else:
         return spread(pirate)
@@ -274,14 +320,17 @@ def defensive_ActTeam(team):
 
     #change phase
     SetSig(team,0,'phase2')
-
+    TeamSig = team.getTeamSignal().split(';')
     l = team.trackPlayers()
     #s = sig
-    s = team.getTeamSignal().split(';')[2]
+    s = TeamSig[2]
 
-    team.buildWalls(1)
-    team.buildWalls(2)
-    team.buildWalls(3)
+    for i in range(1,4):
+        try:
+            if TeamSig[2+i] == "1":
+                team.buildwalls(i)
+        except:
+            pass
 
     #s = sig
     if s != "__empty__":
@@ -289,14 +338,13 @@ def defensive_ActTeam(team):
         #store location of island
         SetSig(team, 5 + island_no, s[1:])
         signal = l[island_no - 1]
-        if signal == "myCaptured":
+        if signal == "myCaptured" or TeamSig[island_no+2] == "1":
             SetSig(team,2,"__empty__")
 #
 
 #CODE
 def ActPirate(pirate):
     pirate.setSignal("1")
-    print(pirate.investigate_current())
     sig = pirate.getTeamSignal().split(';')
     if sig[0][-1] == '1':
         #phase 1
@@ -309,14 +357,14 @@ def ActPirate(pirate):
 def ActTeam(team):
     frame = team.getCurrentFrame()
     if frame == 1:
-        team.setTeamSignal('phase1;1;__empty__;')
+        team.setTeamSignal('phase1;1;__empty__;__empty__;__empty__;__empty__;__empty__;__empty__;__empty__')
     SetSig(team,1,frame)
     phase = team.getTeamSignal().split(';')[0][-1]
     phase = int(phase)
     
     #Stage 1 implimentation
     l = team.trackPlayers()[3:]
-    flag = 0
+    flag = 1
 
     if phase == 1:
         sum = 0
